@@ -1,0 +1,24 @@
+{
+  "name": "simple-auth-server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:browser-pgp/simple-auth-server.git",
+  "author": "shynome <shynome@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@material-ui/core": "^4.9.12",
+    "@prisma/client": "^2.0.0-beta.3",
+    "micro": "^9.3.5-canary.3",
+    "next": "^9.3.6",
+    "openpgp": "^4.10.4",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1"
+  },
+  "devDependencies": {
+    "@prisma/cli": "^2.0.0-beta.3",
+    "@types/node": "^13.13.4",
+    "@types/openpgp": "^4.4.10",
+    "@types/react": "^16.9.34",
+    "typescript": "^3.8.3"
+  }
+}
