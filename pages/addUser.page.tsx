@@ -15,17 +15,9 @@ export default () => {
     <Container maxWidth="md">
       <Header />
       <Card>
-        <form action="/api/createUser" method="POST">
+        <form action="/api/addUser" method="POST">
           <CardContent>
             <Grid container spacing={2} direction="column">
-              <Grid item>
-                <TextField
-                  label="登录名"
-                  name="name"
-                  fullWidth
-                  variant="outlined"
-                />
-              </Grid>
               <Grid item>
                 <TextField
                   label="公钥"
@@ -43,7 +35,7 @@ export default () => {
                   variant="contained"
                   color="primary"
                 >
-                  创建用户
+                  添加用户
                 </Button>
               </Grid>
             </Grid>

@@ -11,7 +11,7 @@ export const Header = () => {
       indicatorColor="primary"
     >
       <Tab label="登录验证" value="/" />
-      <Tab label="创建用户" value="/createUser" />
+      <Tab label="添加用户" value="/addUser" />
     </Tabs>
   )
 }

@@ -2,50 +2,70 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from './prisma'
 import * as openpgp from 'openpgp'
 import micro from 'micro'
+import { getPrivKey } from './pgp'
+import * as kvstore from './kvstore'
 
-interface Input {
-  sign: string
-  who: string
+interface Data {
+  mid: string
+  fingerprint: string
+}
+
+const getEncryptedMsg = async (ctx: string) => {
+  let privKey = await getPrivKey()
+  let { data } = await openpgp.decrypt({
+    message: await openpgp.message.readArmored(ctx),
+    privateKeys: [privKey],
+  })
+  let result = await openpgp.cleartext.readArmored(data)
+  return result
 }
 
 export default micro(async (req: NextApiRequest, res: NextApiResponse) => {
-  let input = (req.query as any) as Input
-  let user = await prisma.user.findOne({
+  let ctx: string = req.query.context || req.body.context
+  let msg = await getEncryptedMsg(ctx)
+  const data: Data = JSON.parse(msg.getText())
+  let createTime: number = await kvstore.getValue(data.mid)
+  if (createTime === null) {
+    res.status(400).end('mid 已过期')
+    return
+  }
+  let nowTime = ~~(Date.now() / 1e3)
+  if (Math.abs(nowTime - createTime) > 60) {
+    res.status(403).end('mid 已超时')
+    return
+  }
+  let users = await prisma.user.findMany({
     where: {
-      name: input.who,
+      fingerprint: data.fingerprint.toLowerCase(),
     },
   })
-  if (user === null) {
+  if (users.length === 0) {
     res.status(500).end('找不到用户')
     return
   }
-  let {
-    err,
-    keys: [pubkey],
-  } = await openpgp.key.readArmored(user.pubkey)
-  if (err) {
-    throw err[0]
-  }
-  let { data, signatures } = await openpgp.verify({
-    message: await openpgp.cleartext.readArmored(input.sign),
-    publicKeys: [pubkey],
+  let pubkeys = await Promise.all(
+    users.map(async (u) => {
+      let {
+        keys: [key],
+      } = await openpgp.key.readArmored(u.pubkey)
+      return key
+    }),
+  )
+  let { signatures } = await openpgp.verify({
+    message: msg,
+    publicKeys: pubkeys,
   })
-  let [sign] = signatures
-  let verified = await sign.verified
-  if (verified !== true) {
-    res.end('签名有效, 但内容已损坏')
+  let i = 0
+  for (let sign of signatures) {
+    if (await sign.verified) {
+      break
+    }
+    i++
+  }
+  let user = users[i]
+  if (typeof user === 'undefined') {
+    res.status(400).end('签名无效')
     return
   }
-  let date = new Date(Number(data))
-  let signTime = date.getTime()
-  if (isNaN(signTime)) {
-    res.end('签名内容需要是当前的时间戳')
-    return
-  }
-  let d = Math.abs(signTime - Date.now())
-  if (d > 30e3) {
-    res.end('签名时间已超过 30s')
-    return
-  }
-  res.end('认证通过')
+  res.end(`认证通过. ${user.name}`)
 })
