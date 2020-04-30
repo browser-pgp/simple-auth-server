@@ -12,6 +12,7 @@
         "<node_internals>/**"
       ],
       "program": "${workspaceFolder}/node_modules/.bin/next",
+      "args": ["--port","3001"]
     },
     {
       "type": "node",

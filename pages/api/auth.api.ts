@@ -21,7 +21,7 @@ const getEncryptedMsg = async (ctx: string) => {
 }
 
 export default micro(async (req: NextApiRequest, res: NextApiResponse) => {
-  let ctx: string = req.query.context || req.body.context
+  let ctx: string = req.query.content || req.body.content
   let msg = await getEncryptedMsg(ctx)
   const data: Data = JSON.parse(msg.getText())
   let createTime: number = await kvstore.getValue(data.mid)
@@ -30,7 +30,7 @@ export default micro(async (req: NextApiRequest, res: NextApiResponse) => {
     return
   }
   let nowTime = ~~(Date.now() / 1e3)
-  if (Math.abs(nowTime - createTime) > (10*60)) {
+  if (Math.abs(nowTime - createTime) > 10 * 60) {
     res.status(403).end('mid 已超时')
     return
   }

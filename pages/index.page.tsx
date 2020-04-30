@@ -6,6 +6,8 @@ import {
   useTheme,
   Card,
   CardContent,
+  CardActions,
+  Link,
 } from '@material-ui/core'
 import { Header } from './header'
 import { NextPage } from 'next'
@@ -13,15 +15,30 @@ import { NextPage } from 'next'
 interface Data {
   mid: string
   auth: string
+  fingerprint: string
 }
 
 const AuthPage: NextPage<{ data: Data }> = ({ data }) => {
   const theme = useTheme()
+  let link = new URL('http://127.0.0.1:3000/login')
+  link.searchParams.set('auth', data.auth)
+  link.searchParams.set('fingerprint', data.fingerprint)
+  link.searchParams.set('mid', data.mid)
   return (
     <Container maxWidth="md">
       <Header />
       <Card>
-        <form action={data.auth} method="POST">
+        <CardActions>
+          <Link
+            style={{ display: 'block', width: '100%' }}
+            href={link.toString()}
+          >
+            <Button fullWidth variant="contained" size="large" color="primary">
+              第三方登录
+            </Button>
+          </Link>
+        </CardActions>
+        <form action={data.auth} method="POST" style={{ display: 'none' }}>
           <CardContent>
             <Grid container spacing={2} direction="column">
               <Grid item>
@@ -63,7 +80,7 @@ const AuthPage: NextPage<{ data: Data }> = ({ data }) => {
 import fetch from 'node-fetch'
 
 AuthPage.getInitialProps = async () => {
-  let data = await fetch('http://127.0.0.1:3000/api/getMid').then((res) =>
+  let data = await fetch(process.env.Addr + '/api/getMid').then((res) =>
     res.json(),
   )
   return { data: data }

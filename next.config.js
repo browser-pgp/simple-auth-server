@@ -1,6 +1,8 @@
+require('dotenv').config()
+
 module.exports = {
-  pageExtensions: [
-    'api.ts',
-    'page.tsx'
-  ],
+  envs: {
+    Addr: process.env.Addr || 'http://127.0.0.1:3000',
+  },
+  pageExtensions: ['api.ts', 'page.tsx'],
 }

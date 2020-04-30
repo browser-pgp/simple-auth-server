@@ -8,6 +8,7 @@
   "dependencies": {
     "@material-ui/core": "^4.9.12",
     "@prisma/client": "^2.0.0-beta.3",
+    "dotenv": "^8.2.0",
     "micro": "^9.3.5-canary.3",
     "next": "^9.3.6",
     "node-fetch": "^2.6.0",
@@ -17,6 +18,7 @@
   },
   "devDependencies": {
     "@prisma/cli": "^2.0.0-beta.3",
+    "@types/dotenv": "^8.2.0",
     "@types/node": "^13.13.4",
     "@types/node-fetch": "^2.5.7",
     "@types/openpgp": "^4.4.10",
