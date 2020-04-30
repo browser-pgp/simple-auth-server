@@ -30,7 +30,7 @@ export default micro(async (req: NextApiRequest, res: NextApiResponse) => {
     return
   }
   let nowTime = ~~(Date.now() / 1e3)
-  if (Math.abs(nowTime - createTime) > 60) {
+  if (Math.abs(nowTime - createTime) > (10*60)) {
     res.status(403).end('mid 已超时')
     return
   }
