@@ -56,7 +56,6 @@ import { prisma } from './api/prisma'
 export async function getServerSideProps() {
   // const { prisma } = await import('./api/prisma')
   let users = await prisma.user.findMany()
-  users[0].fingerprint
   return { props: { users } }
 }
 
