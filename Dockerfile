@@ -1,5 +1,4 @@
-FROM node:lts-alpine as Build-base
-RUN apk add --no-cache git build-base
+FROM node:lts as Build-base
 WORKDIR /app
 
 FROM Build-base as Build-vendor-pre
@@ -20,10 +19,18 @@ RUN yarn install
 FROM Build-base as Build
 COPY --from=Build-vendor-build /app/node_modules /app/node_modules
 COPY . /app
+RUN yarn prisma migrate up -c --experimental
+RUN yarn prisma generate
 RUN yarn next build
 
-FROM node:lts-alpine
+FROM node:lts
 COPY --from=Runtime-vendor-build /app/node_modules /app/node_modules
 COPY --from=Build /app/.next /app/.next
+COPY --from=Build /app/prisma/dev.db /app/prisma/dev.db
 COPY . /app
+WORKDIR /app
+RUN yarn prisma generate
+ENV \
+  Addr=http://127.0.0.1:3000 \
+  PORT=3000
 CMD [ "yarn", "docker:start" ]
