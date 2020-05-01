@@ -25,5 +25,7 @@ export default micro(async (req: NextApiRequest, res: NextApiResponse) => {
       fingerprint: pubkey.getFingerprint(),
     },
   })
-  res.json(u)
+  res.status(302)
+  res.setHeader('Location', process.env.Addr + '/users')
+  res.end()
 })

@@ -16,20 +16,44 @@ const getPrivKey = async () => {
   return key
 }
 
+const getPubKey = async () => {
+  const pubkey = fs.readFileSync('keys/app.pub')
+  const {
+    err,
+    keys: [key],
+  } = await openpgp.key.readArmored(pubkey)
+  if (err?.length) {
+    throw err[0]
+  }
+  return key
+}
+
 /**
  *
  * @param {string} ctx
  */
 async function main(ctx) {
   const privKey = await getPrivKey()
-  const { data, signatures } = await openpgp.decrypt({
-    message: await openpgp.message.readArmored(ctx),
-    privateKeys: [privKey],
+  const pubkey = await getPubKey()
+  let v = 'dddd'
+  let { data } = await openpgp.encrypt({
+    message: await openpgp.message.fromText(v),
+    publicKeys: pubkey,
   })
   debugger
-  let text = await openpgp.cleartext.readArmored(data)
-  console.log(text)
+  let d = await openpgp.decrypt({
+    message: await openpgp.message.readArmored(data),
+    privateKeys: privKey,
+  })
   debugger
+  // const { data, signatures } = await openpgp.decrypt({
+  //   message: await openpgp.message.readArmored(ctx),
+  //   privateKeys: [privKey],
+  // })
+  // debugger
+  // let text = await openpgp.cleartext.readArmored(data)
+  // console.log(text)
+  // debugger
 }
 let ctx = `
 -----BEGIN PGP MESSAGE-----

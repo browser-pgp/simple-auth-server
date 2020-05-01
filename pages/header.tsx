@@ -12,6 +12,7 @@ export const Header = () => {
     >
       <Tab label="登录验证" value="/" />
       <Tab label="添加用户" value="/addUser" />
+      <Tab label="用户列表" value="/users" />
     </Tabs>
   )
 }

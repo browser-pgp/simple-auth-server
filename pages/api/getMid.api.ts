@@ -3,14 +3,22 @@ import { NextApiResponse } from 'next'
 import * as kvstore from './kvstore'
 import { getPubKey } from './pgp'
 
-export default micro(async (req, res: NextApiResponse) => {
+const deferFingerprint = Promise.resolve().then(async () => {
   const pubkey = await getPubKey()
+  return pubkey.getFingerprint()
+})
+
+export const getMid = async () => {
   let nowTime = ~~(Date.now() / 1e3)
   let mid = await kvstore.setValue(nowTime)
-  let data = {
+  return {
     mid,
     auth: process.env.Addr + '/api/auth',
-    fingerprint: pubkey.getFingerprint(),
+    fingerprint: await deferFingerprint,
   }
+}
+
+export default micro(async (req, res: NextApiResponse) => {
+  let data = await getMid()
   res.json(data)
 })

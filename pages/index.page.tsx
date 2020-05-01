@@ -8,9 +8,16 @@ import {
   CardContent,
   CardActions,
   Link,
+  ButtonGroup,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemSecondaryAction,
 } from '@material-ui/core'
 import { Header } from './header'
 import { NextPage } from 'next'
+import CopyToClipboard from 'react-copy-to-clipboard'
+import { useMemo, Fragment } from 'react'
 
 interface Data {
   mid: string
@@ -18,72 +25,77 @@ interface Data {
   fingerprint: string
 }
 
-const AuthPage: NextPage<{ data: Data }> = ({ data }) => {
+const AuthPage: NextPage<{ data: Data; pubkey: string }> = ({
+  data,
+  pubkey,
+}) => {
   const theme = useTheme()
-  let link = new URL('http://127.0.0.1:3000/login')
-  link.searchParams.set('auth', data.auth)
-  link.searchParams.set('fingerprint', data.fingerprint)
-  link.searchParams.set('mid', data.mid)
+  let link = useMemo(() => {
+    let link = new URL('web+pgpauth:login')
+    link.searchParams.set('auth', data.auth)
+    link.searchParams.set('fingerprint', data.fingerprint)
+    link.searchParams.set('mid', data.mid)
+    return link.toString()
+  }, [])
+  const blink = useMemo(() => {
+    let blink = new URL('https://browser-pgp.github.io/login.html')
+    blink.searchParams.set('url', link)
+    return blink.toString()
+  }, [link])
   return (
     <Container maxWidth="md">
       <Header />
       <Card>
-        <CardActions>
-          <Link
-            style={{ display: 'block', width: '100%' }}
-            href={link.toString()}
-          >
-            <Button fullWidth variant="contained" size="large" color="primary">
-              第三方登录
-            </Button>
+        <List>
+          <ListItem>
+            <ListItemText
+              primary="网站应用公钥"
+              secondary={
+                <Fragment>
+                  <pre>
+                    <code>{pubkey}</code>
+                  </pre>
+                  <CopyToClipboard
+                    text={pubkey}
+                    onCopy={() => alert('复制成功')}
+                  >
+                    <Button variant="outlined">点击复制网站应用公钥</Button>
+                  </CopyToClipboard>
+                </Fragment>
+              }
+            />
+          </ListItem>
+          <Link href={link}>
+            <ListItem button>
+              <ListItemText
+                primary="web+pgpauth 协议登录"
+                secondary={<code>{decodeURIComponent(link)}</code>}
+              />
+            </ListItem>
           </Link>
-        </CardActions>
-        <form action={data.auth} method="POST" style={{ display: 'none' }}>
-          <CardContent>
-            <Grid container spacing={2} direction="column">
-              <Grid item>
-                <TextField
-                  label="要签名的内容"
-                  fullWidth
-                  variant="outlined"
-                  value={JSON.stringify({ mid: data.mid, fingerprint: '' })}
-                />
-              </Grid>
-              <Grid item>
-                <TextField
-                  label="签名"
-                  name="context"
-                  fullWidth
-                  variant="outlined"
-                  multiline
-                  rows="10"
-                />
-              </Grid>
-              <Grid item>
-                <Button
-                  fullWidth
-                  type="submit"
-                  variant="contained"
-                  color="primary"
-                >
-                  登录验证
-                </Button>
-              </Grid>
-            </Grid>
-          </CardContent>
-        </form>
+          <Link href={blink}>
+            <ListItem button>
+              <ListItemText
+                primary="普通链接登录"
+                secondary={
+                  <code>{decodeURIComponent(decodeURIComponent(blink))}</code>
+                }
+              />
+            </ListItem>
+          </Link>
+        </List>
       </Card>
     </Container>
   )
 }
 
-import fetch from 'node-fetch'
+import { getMid } from './api/getMid.api'
+import * as fs from 'fs'
 
-AuthPage.getInitialProps = async () => {
-  let data = await fetch(process.env.Addr + '/api/getMid').then((res) =>
-    res.json(),
-  )
-  return { data: data }
+export async function getServerSideProps() {
+  let data = await getMid()
+  const pubkey = fs.readFileSync('keys/app.pub', 'utf8')
+  return { props: { data, pubkey } }
 }
 
 export default AuthPage
