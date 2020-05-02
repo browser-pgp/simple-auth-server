@@ -40,7 +40,9 @@ export default micro(async (req: NextApiRequest, res: NextApiResponse) => {
     },
   })
   if (users.length === 0) {
-    res.status(500).end('找不到用户')
+    res.status(400)
+    res.setHeader('Content-Type', 'text/html')
+    res.end('找不到用户 <a href="/addUser" >添加用户</a>')
     return
   }
   let pubkeys = await Promise.all(
