@@ -71,6 +71,7 @@ export const BasewayLogin = ({ data }: { data: Data }) => {
   const v = JSON.stringify(
     {
       mid: data.mid,
+      auth: data.auth,
       fingerprint,
     },
     null,
