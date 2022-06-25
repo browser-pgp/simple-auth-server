@@ -16,7 +16,7 @@
     "dotenv": "^8.2.0",
     "micro": "^9.3.5-canary.3",
     "next": "^9.3.6",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.7",
     "notistack": "^0.9.11",
     "openpgp": "^4.10.4",
     "qrcode.react": "^1.0.0",
